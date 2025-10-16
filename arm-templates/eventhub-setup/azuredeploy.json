@@ -190,7 +190,6 @@
       }
     },
     {
-      "condition": "[not(parameters('useExistingStorageAccount'))]",
       "type": "Microsoft.Storage/storageAccounts/blobServices",
       "apiVersion": "2023-01-01",
       "name": "[concat(parameters('storageAccountName'), '/default')]",
