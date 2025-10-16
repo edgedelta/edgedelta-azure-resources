@@ -109,7 +109,9 @@
       "apiVersion": "2022-10-01-preview",
       "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'))]",
       "location": "[parameters('location')]",
-      "dependsOn": "[if(parameters('useExistingNamespace'), json('[]'), json(concat('[\"', resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName')), '\"]')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]"
+      ],
       "properties": {
         "messageRetentionInDays": "[parameters('messageRetentionInDays')]",
         "partitionCount": "[parameters('partitionCount')]",
@@ -189,7 +191,9 @@
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2023-01-01",
       "name": "[concat(parameters('storageAccountName'), '/default/', variables('checkpointContainerName'))]",
-      "dependsOn": "[if(parameters('useExistingStorageAccount'), json('[]'), json(concat('[\"', resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default'), '\"]')))]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
+      ],
       "properties": {
         "publicAccess": "None"
       }
