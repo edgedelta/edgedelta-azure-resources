@@ -1,0 +1,30 @@
+# Azure deployment artifacts
+*.azuredeploy.parameters.local.json
+deployment-outputs.json
+
+# PowerShell modules
+PSModules/
+
+# Editor directories and files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Logs
+*.log
+
+# Temporary files
+*.tmp
+*.bak
+*.cache
+
+# Environment files with secrets
+.env
+.env.local
+*.secret
+
+# Azure CLI local config
+.azure/
