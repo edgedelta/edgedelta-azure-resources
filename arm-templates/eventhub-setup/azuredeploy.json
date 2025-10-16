@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.4.0",
+  "contentVersion": "1.0.5.0",
   "metadata": {
     "_generator": {
       "name": "Edge Delta",
-      "version": "1.0.4.0"
+      "version": "1.0.5.0"
     },
     "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. Creates Event Hub namespace, Event Hub, consumer groups, access policies, and storage account for checkpoint management.",
     "summary": "One-click deployment of Azure Event Hub infrastructure for Edge Delta telemetry streaming",
@@ -155,7 +155,8 @@
       "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'), '/', variables('listenAuthRuleName'))]",
       "location": "[parameters('location')]",
       "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]"
+        "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
+        "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('sendAuthRuleName'))]"
       ],
       "properties": {
         "rights": [
