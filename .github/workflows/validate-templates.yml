@@ -46,7 +46,7 @@ jobs:
         echo "Checking required fields..."
         TEMPLATE="arm-templates/eventhub-setup/azuredeploy.json"
 
-        if jq -e '."\$schema"' "$TEMPLATE" > /dev/null 2>&1; then
+        if jq -e '."$schema"' "$TEMPLATE" > /dev/null 2>&1; then
           echo "✓ Field '\$schema' present"
         else
           echo "✗ Field '\$schema' missing"
