@@ -59,7 +59,19 @@
                     "location": "onBasics"
                   }
                 },
+                "constraints": {
+                  "required": true
+                },
                 "visible": "[steps('eventHubConfig').namespaceConfig.useExistingNamespace]"
+              },
+              {
+                "name": "existingNamespaceTierWarning",
+                "type": "Microsoft.Common.InfoBox",
+                "options": {
+                  "icon": "Error",
+                  "text": "The selected Event Hub namespace uses the Basic tier. Edge Delta requires Standard or Premium tier for consumer group support. Please select a different namespace or create a new one with Standard/Premium tier."
+                },
+                "visible": "[and(steps('eventHubConfig').namespaceConfig.useExistingNamespace, not(empty(steps('eventHubConfig').namespaceConfig.existingNamespace)), equals(coalesce(steps('eventHubConfig').namespaceConfig.existingNamespace.sku.tier, ''), 'Basic'))]"
               },
               {
                 "name": "newNamespaceName",
@@ -80,15 +92,11 @@
                 "type": "Microsoft.Common.DropDown",
                 "label": "Event Hub SKU",
                 "defaultValue": "Standard",
-                "toolTip": "Select the SKU tier (Standard or Premium recommended for Edge Delta)",
+                "toolTip": "Edge Delta requires Standard or Premium tier for consumer group support",
                 "constraints": {
                   "allowedValues": [
                     {
-                      "label": "Basic",
-                      "value": "Basic"
-                    },
-                    {
-                      "label": "Standard",
+                      "label": "Standard (Recommended)",
                       "value": "Standard"
                     },
                     {

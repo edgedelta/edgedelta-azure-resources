@@ -52,6 +52,8 @@ The UI definition provides an enhanced deployment experience with:
   - Event Hub namespace (e.g., `edgedelta-eh-prod-eastus`)
   - Storage account (e.g., `edgedeltachkpt123`)
 
+**Important:** Edge Delta requires **Standard or Premium tier** Event Hub namespace. The Basic tier does not support consumer groups, which are required for Edge Delta's Event Processor Host model. If selecting an existing namespace, ensure it is Standard or Premium tier.
+
 ## Deploy to Azure
 
 Click the button below to deploy with an interactive UI that shows dropdowns for existing resources:
@@ -194,6 +196,11 @@ Costs vary by region, throughput, and data volume.
 - Connection strings available only in deployment outputs
 
 ## Troubleshooting
+
+**Error: "Cannot perform operation on entity type 'ConsumerGroup' because namespace is using 'Basic' tier"**
+- Edge Delta requires Standard or Premium tier Event Hub namespace
+- Basic tier does not support consumer groups
+- Solution: Either upgrade existing namespace to Standard/Premium, or select a different namespace, or create a new Standard/Premium namespace
 
 **Namespace name already exists:**
 - Event Hub namespaces must be globally unique

@@ -1,6 +1,6 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.1.0",
+  "contentVersion": "1.0.2.0",
   "metadata": {
     "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration"
   },
@@ -29,12 +29,11 @@
       "type": "string",
       "defaultValue": "Standard",
       "allowedValues": [
-        "Basic",
         "Standard",
         "Premium"
       ],
       "metadata": {
-        "description": "Event Hub SKU (only used when creating new namespace)"
+        "description": "Event Hub SKU (only used when creating new namespace). Basic tier is not supported as it does not support consumer groups required by Edge Delta."
       }
     },
     "eventHubName": {
