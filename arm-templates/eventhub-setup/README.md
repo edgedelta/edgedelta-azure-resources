@@ -32,19 +32,33 @@ Optionally creates (based on parameters):
 - **Event Hub Namespace** - If creating new
 - **Storage Account** - If creating new
 
+## What's Included
+
+This deployment includes:
+- **azuredeploy.json** - ARM template for infrastructure
+- **createUiDefinition.json** - Interactive deployment UI with resource pickers
+
+The UI definition provides an enhanced deployment experience with:
+- Location picker dropdown
+- Resource selectors for existing Event Hub namespaces
+- Resource selectors for existing storage accounts
+- Input validation and helpful tooltips
+
 ## Prerequisites
 
 - Azure subscription
 - Resource group (create during deployment or use existing)
-- Globally unique names for:
+- Globally unique names for new resources:
   - Event Hub namespace (e.g., `edgedelta-eh-prod-eastus`)
   - Storage account (e.g., `edgedeltachkpt123`)
 
 ## Deploy to Azure
 
-Click the button below to deploy:
+Click the button below to deploy with an interactive UI that shows dropdowns for existing resources:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json)
+
+> The deployment wizard will show resource pickers for existing Event Hub namespaces and storage accounts when you select "Use existing".
 
 ## Parameters
 

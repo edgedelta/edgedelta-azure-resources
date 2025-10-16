@@ -1,0 +1,233 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
+  "handler": "Microsoft.Azure.CreateUIDef",
+  "version": "0.1.2-preview",
+  "parameters": {
+    "basics": [
+      {
+        "name": "location",
+        "type": "Microsoft.Common.LocationSelector",
+        "label": "Location",
+        "defaultValue": "[resourceGroup().location]",
+        "toolTip": "Select the Azure region for resources",
+        "resourceTypes": [
+          "Microsoft.EventHub/namespaces",
+          "Microsoft.Storage/storageAccounts"
+        ],
+        "visible": true
+      }
+    ],
+    "steps": [
+      {
+        "name": "eventHubConfig",
+        "label": "Event Hub Configuration",
+        "elements": [
+          {
+            "name": "namespaceConfig",
+            "type": "Microsoft.Common.Section",
+            "label": "Event Hub Namespace",
+            "elements": [
+              {
+                "name": "useExistingNamespace",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Event Hub Namespace",
+                "defaultValue": "Create new",
+                "toolTip": "Choose to create a new namespace or use an existing one",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Create new",
+                      "value": false
+                    },
+                    {
+                      "label": "Use existing",
+                      "value": true
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "existingNamespace",
+                "type": "Microsoft.Solutions.ResourceSelector",
+                "label": "Select existing namespace",
+                "resourceType": "Microsoft.EventHub/namespaces",
+                "options": {
+                  "filter": {
+                    "subscription": "onBasics",
+                    "location": "onBasics"
+                  }
+                },
+                "visible": "[steps('eventHubConfig').namespaceConfig.useExistingNamespace]"
+              },
+              {
+                "name": "newNamespaceName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Namespace name",
+                "defaultValue": "",
+                "toolTip": "Enter a globally unique name for the Event Hub namespace",
+                "placeholder": "edgedelta-eh-prod-eastus",
+                "constraints": {
+                  "required": true,
+                  "regex": "^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$",
+                  "validationMessage": "Namespace name must be 6-50 characters, start with a letter, end with letter or number, and contain only letters, numbers, and hyphens."
+                },
+                "visible": "[not(steps('eventHubConfig').namespaceConfig.useExistingNamespace)]"
+              },
+              {
+                "name": "eventHubSku",
+                "type": "Microsoft.Common.DropDown",
+                "label": "Event Hub SKU",
+                "defaultValue": "Standard",
+                "toolTip": "Select the SKU tier (Standard or Premium recommended for Edge Delta)",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Basic",
+                      "value": "Basic"
+                    },
+                    {
+                      "label": "Standard",
+                      "value": "Standard"
+                    },
+                    {
+                      "label": "Premium",
+                      "value": "Premium"
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": "[not(steps('eventHubConfig').namespaceConfig.useExistingNamespace)]"
+              }
+            ]
+          },
+          {
+            "name": "eventHubSettings",
+            "type": "Microsoft.Common.Section",
+            "label": "Event Hub Settings",
+            "elements": [
+              {
+                "name": "eventHubName",
+                "type": "Microsoft.Common.TextBox",
+                "label": "Event Hub name",
+                "defaultValue": "edgedelta-logs",
+                "toolTip": "Name of the Event Hub to create within the namespace",
+                "constraints": {
+                  "required": true,
+                  "regex": "^[a-zA-Z0-9][a-zA-Z0-9-]{0,48}[a-zA-Z0-9]$",
+                  "validationMessage": "Event Hub name must be 1-50 characters and contain only letters, numbers, and hyphens."
+                },
+                "visible": true
+              },
+              {
+                "name": "partitionCount",
+                "type": "Microsoft.Common.Slider",
+                "min": 2,
+                "max": 32,
+                "label": "Partition count",
+                "defaultValue": 4,
+                "toolTip": "Number of partitions (2-4 for low volume, 8-32 for high volume)",
+                "constraints": {
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "messageRetentionInDays",
+                "type": "Microsoft.Common.Slider",
+                "min": 1,
+                "max": 7,
+                "label": "Message retention (days)",
+                "defaultValue": 1,
+                "toolTip": "Number of days to retain messages in Event Hub",
+                "constraints": {
+                  "required": true
+                },
+                "visible": true
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "name": "storageConfig",
+        "label": "Storage Configuration",
+        "elements": [
+          {
+            "name": "storageAccount",
+            "type": "Microsoft.Common.Section",
+            "label": "Storage Account for Checkpointing",
+            "elements": [
+              {
+                "name": "useExistingStorageAccount",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Storage Account",
+                "defaultValue": "Create new",
+                "toolTip": "Choose to create a new storage account or use an existing one",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Create new",
+                      "value": false
+                    },
+                    {
+                      "label": "Use existing",
+                      "value": true
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "existingStorageAccount",
+                "type": "Microsoft.Solutions.ResourceSelector",
+                "label": "Select existing storage account",
+                "resourceType": "Microsoft.Storage/storageAccounts",
+                "options": {
+                  "filter": {
+                    "subscription": "onBasics",
+                    "location": "onBasics"
+                  }
+                },
+                "visible": "[steps('storageConfig').storageAccount.useExistingStorageAccount]"
+              },
+              {
+                "name": "newStorageAccountName",
+                "type": "Microsoft.Storage.StorageAccountSelector",
+                "label": "Storage account",
+                "toolTip": "Storage account for Edge Delta checkpoint data",
+                "defaultValue": {
+                  "type": "Standard_LRS"
+                },
+                "constraints": {
+                  "allowedTypes": [
+                    "Standard_LRS",
+                    "Standard_GRS",
+                    "Standard_ZRS"
+                  ]
+                },
+                "options": {
+                  "hideExisting": true
+                },
+                "visible": "[not(steps('storageConfig').storageAccount.useExistingStorageAccount)]"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "outputs": {
+      "location": "[basics('location')]",
+      "useExistingNamespace": "[steps('eventHubConfig').namespaceConfig.useExistingNamespace]",
+      "eventHubNamespaceName": "[if(steps('eventHubConfig').namespaceConfig.useExistingNamespace, steps('eventHubConfig').namespaceConfig.existingNamespace.name, steps('eventHubConfig').namespaceConfig.newNamespaceName)]",
+      "eventHubSku": "[if(steps('eventHubConfig').namespaceConfig.useExistingNamespace, 'Standard', steps('eventHubConfig').namespaceConfig.eventHubSku)]",
+      "eventHubName": "[steps('eventHubConfig').eventHubSettings.eventHubName]",
+      "partitionCount": "[steps('eventHubConfig').eventHubSettings.partitionCount]",
+      "messageRetentionInDays": "[steps('eventHubConfig').eventHubSettings.messageRetentionInDays]",
+      "useExistingStorageAccount": "[steps('storageConfig').storageAccount.useExistingStorageAccount]",
+      "storageAccountName": "[if(steps('storageConfig').storageAccount.useExistingStorageAccount, steps('storageConfig').storageAccount.existingStorageAccount.name, steps('storageConfig').storageAccount.newStorageAccountName.name)]"
+    }
+  }
+}
