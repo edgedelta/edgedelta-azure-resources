@@ -246,9 +246,11 @@
                 "resourceType": "Microsoft.Storage/storageAccounts",
                 "options": {
                   "filter": {
-                    "subscription": "onBasics",
-                    "location": "onBasics"
+                    "subscription": "onBasics"
                   }
+                },
+                "constraints": {
+                  "required": true
                 },
                 "visible": "[steps('storageConfig').storageAccount.useExistingStorageAccount]"
               },
