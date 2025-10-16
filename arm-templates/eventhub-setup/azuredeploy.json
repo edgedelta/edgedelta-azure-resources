@@ -200,25 +200,17 @@
     }
   ],
   "outputs": {
-    "eventHubNamespace": {
+    "edgeDeltaConfiguration": {
       "type": "string",
-      "value": "[parameters('eventHubNamespaceName')]"
-    },
-    "eventHubName": {
-      "type": "string",
-      "value": "[parameters('eventHubName')]"
-    },
-    "consumerGroup": {
-      "type": "string",
-      "value": "[variables('consumerGroupName')]"
-    },
-    "sendConnectionString": {
-      "type": "string",
-      "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('sendAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+      "value": "[concat('Copy this YAML to your Edge Delta configuration:\n\nnodes:\n  - name: azure_eventhub_source\n    type: eventhub_input\n    connection_string: \"', listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('listenAuthRuleName')), '2022-10-01-preview').primaryConnectionString, '\"\n    consumer_group: \"', variables('consumerGroupName'), '\"\n    storage_account_name: ', parameters('storageAccountName'), '\n    storage_account_key: \"', listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value, '\"\n    storage_container_name: \"', variables('checkpointContainerName'), '\"')]"
     },
     "listenConnectionString": {
       "type": "string",
       "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('listenAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+    },
+    "consumerGroup": {
+      "type": "string",
+      "value": "[variables('consumerGroupName')]"
     },
     "storageAccountName": {
       "type": "string",
@@ -232,13 +224,25 @@
       "type": "string",
       "value": "[variables('checkpointContainerName')]"
     },
+    "sendConnectionString": {
+      "type": "string",
+      "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('sendAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+    },
+    "eventHubNamespace": {
+      "type": "string",
+      "value": "[parameters('eventHubNamespaceName')]"
+    },
+    "eventHubName": {
+      "type": "string",
+      "value": "[parameters('eventHubName')]"
+    },
     "deploymentMode": {
       "type": "string",
       "value": "[if(and(parameters('useExistingNamespace'), parameters('useExistingStorageAccount')), 'Used existing namespace and storage', if(parameters('useExistingNamespace'), 'Used existing namespace, created new storage', if(parameters('useExistingStorageAccount'), 'Created new namespace, used existing storage', 'Created all new resources')))]"
     },
     "nextSteps": {
       "type": "string",
-      "value": "Resources configured successfully! Use the listenConnectionString output for Edge Delta configuration. Configure Azure diagnostic settings to stream logs to this Event Hub."
+      "value": "1. Copy the 'edgeDeltaConfiguration' output to your Edge Delta YAML configuration. 2. Configure Azure diagnostic settings to stream logs to this Event Hub (use sendConnectionString). 3. See https://docs.edgedelta.com/event-hub-source-node for complete setup guide."
     }
   }
 }

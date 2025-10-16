@@ -78,15 +78,24 @@ Click the button below to deploy with an interactive UI that shows dropdowns for
 
 After deployment, the template provides these outputs:
 
-- `listenConnectionString` - Use this for Edge Delta configuration
-- `sendConnectionString` - Use this for Azure diagnostic settings
+**For Edge Delta Configuration:**
+- `edgeDeltaConfiguration` - Complete YAML configuration ready to copy into Edge Delta (includes all required values)
+- `listenConnectionString` - Event Hub connection string with Listen permission
+- `consumerGroup` - Consumer group name (`edgedelta-processors`)
+- `storageAccountName` - Storage account for checkpointing
+- `storageAccountKey` - Storage account access key
+- `checkpointContainer` - Blob container name (`edgedelta-checkpoints`)
+
+**For Azure Diagnostic Settings:**
+- `sendConnectionString` - Event Hub connection string with Send permission (use this when configuring Azure resources to stream logs)
+
+**Deployment Information:**
 - `eventHubNamespace` - Event Hub namespace name
 - `eventHubName` - Event Hub name
-- `consumerGroup` - Consumer group name
-- `storageAccountName` - Storage account name
-- `storageAccountKey` - Storage account key
-- `checkpointContainer` - Checkpoint container name
 - `deploymentMode` - Shows which resources were created vs. existing
+- `nextSteps` - Quick reference for next actions
+
+> **Security Note:** Connection strings and storage keys are sensitive. The deployment outputs are stored in Azure deployment history. Ensure only authorized personnel have access to the resource group.
 
 ## Post-Deployment Steps
 
