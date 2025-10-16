@@ -1,10 +1,10 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.6.0",
+  "contentVersion": "1.0.7.0",
   "metadata": {
     "_generator": {
       "name": "Edge Delta",
-      "version": "1.0.6.0"
+      "version": "1.0.7.0"
     },
     "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. Creates Event Hub namespace, Event Hub, consumer groups, access policies, storage account for checkpoint management, and optionally configures subscription activity logs.",
     "summary": "One-click deployment of Azure Event Hub infrastructure with automatic activity log streaming for Edge Delta",
