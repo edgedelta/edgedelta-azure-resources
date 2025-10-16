@@ -91,9 +91,9 @@
                 "name": "newNamespaceName",
                 "type": "Microsoft.Common.TextBox",
                 "label": "Namespace name",
-                "defaultValue": "",
+                "defaultValue": "[concat('edgedelta-eh-', take(toLower(replace(replace(location(), ' ', ''), '(', '')), 10), '-', take(uniqueString(subscription().subscriptionId), 6))]",
                 "toolTip": "Enter a globally unique name for the Event Hub namespace",
-                "placeholder": "edgedelta-eh-prod-eastus",
+                "placeholder": "edgedelta-eh-eastus-abc123",
                 "constraints": {
                   "required": true,
                   "regex": "^[a-zA-Z][a-zA-Z0-9-]{4,48}[a-zA-Z0-9]$",
@@ -221,6 +221,7 @@
                 "label": "Storage account",
                 "toolTip": "Storage account for Edge Delta checkpoint data",
                 "defaultValue": {
+                  "name": "[concat('edchk', take(uniqueString(subscription().subscriptionId), 12))]",
                   "type": "Standard_LRS"
                 },
                 "constraints": {
