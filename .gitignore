@@ -28,3 +28,4 @@ PSModules/
 
 # Azure CLI local config
 .azure/
+arm-ttk/

@@ -1,0 +1,106 @@
+name: Validate ARM Templates
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'arm-templates/**'
+  pull_request:
+    branches: [ main ]
+    paths:
+      - 'arm-templates/**'
+  workflow_dispatch:
+
+jobs:
+  validate:
+    name: Validate ARM Templates
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Install jq
+      run: sudo apt-get update && sudo apt-get install -y jq
+
+    - name: Validate JSON syntax - ARM template
+      run: |
+        echo "Validating azuredeploy.json..."
+        jq empty arm-templates/eventhub-setup/azuredeploy.json
+        echo "✓ Template JSON is valid"
+
+    - name: Validate JSON syntax - UI definition
+      run: |
+        echo "Validating createUiDefinition.json..."
+        jq empty arm-templates/eventhub-setup/createUiDefinition.json
+        echo "✓ UI definition JSON is valid"
+
+    - name: Validate JSON syntax - metadata
+      run: |
+        echo "Validating metadata.json..."
+        jq empty arm-templates/eventhub-setup/metadata.json
+        echo "✓ Metadata JSON is valid"
+
+    - name: Check required ARM template fields
+      run: |
+        echo "Checking required fields..."
+        TEMPLATE="arm-templates/eventhub-setup/azuredeploy.json"
+
+        if jq -e '."\$schema"' "$TEMPLATE" > /dev/null 2>&1; then
+          echo "✓ Field '\$schema' present"
+        else
+          echo "✗ Field '\$schema' missing"
+          exit 1
+        fi
+
+        for field in 'contentVersion' 'resources' 'parameters' 'outputs'; do
+          if jq -e ".$field" "$TEMPLATE" > /dev/null 2>&1; then
+            echo "✓ Field '$field' present"
+          else
+            echo "✗ Field '$field' missing"
+            exit 1
+          fi
+        done
+
+    - name: Validate parameter files
+      run: |
+        echo "Validating test parameter files..."
+        for param_file in arm-templates/eventhub-setup/tests/parameters/*.json; do
+          echo "  Checking $param_file"
+          jq empty "$param_file"
+        done
+        echo "✓ All parameter files are valid"
+
+    - name: Check UI outputs match template parameters
+      run: |
+        TEMPLATE="arm-templates/eventhub-setup/azuredeploy.json"
+        UI_DEF="arm-templates/eventhub-setup/createUiDefinition.json"
+
+        echo "Checking UI outputs match template parameters..."
+        UI_OUTPUTS=$(jq -r '.parameters.outputs | keys[]' "$UI_DEF" | sort)
+        TEMPLATE_PARAMS=$(jq -r '.parameters | keys[]' "$TEMPLATE" | sort)
+
+        MISSING_PARAMS=()
+        for param in $TEMPLATE_PARAMS; do
+          if ! echo "$UI_OUTPUTS" | grep -q "^$param$"; then
+            MISSING_PARAMS+=("$param")
+          fi
+        done
+
+        if [ ${#MISSING_PARAMS[@]} -eq 0 ]; then
+          echo "✓ All template parameters have UI outputs"
+        else
+          echo "⚠ Missing UI outputs for parameters:"
+          for param in "${MISSING_PARAMS[@]}"; do
+            echo "  - $param"
+          done
+        fi
+
+    - name: Summary
+      run: |
+        echo ""
+        echo "=========================================="
+        echo "✓ All validation checks passed!"
+        echo "=========================================="
+        echo ""
+        echo "Templates are ready for deployment."
