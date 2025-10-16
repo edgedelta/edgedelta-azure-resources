@@ -3,6 +3,20 @@
   "handler": "Microsoft.Azure.CreateUIDef",
   "version": "0.1.2-preview",
   "parameters": {
+    "config": {
+      "isWizard": true,
+      "basics": {
+        "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. This template creates Event Hub, consumer groups, access policies, and storage for checkpointing.",
+        "location": {
+          "visible": true,
+          "allowedValues": []
+        }
+      }
+    },
+    "resourceTypes": [
+      "Microsoft.EventHub/namespaces",
+      "Microsoft.Storage/storageAccounts"
+    ],
     "basics": [
       {
         "name": "location",
