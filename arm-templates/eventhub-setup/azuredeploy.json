@@ -6,7 +6,7 @@
   },
   "parameters": {
     "location": {
-      "type": "location",
+      "type": "string",
       "defaultValue": "[resourceGroup().location]",
       "metadata": {
         "description": "Azure region for resources"
