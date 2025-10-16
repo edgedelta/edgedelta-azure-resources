@@ -5,24 +5,24 @@
     "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration"
   },
   "parameters": {
+    "location": {
+      "type": "location",
+      "defaultValue": "[resourceGroup().location]",
+      "metadata": {
+        "description": "Azure region for resources"
+      }
+    },
+    "useExistingNamespace": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Use existing Event Hub namespace instead of creating new one"
+      }
+    },
     "eventHubNamespaceName": {
       "type": "string",
       "metadata": {
-        "description": "Name of the Event Hub namespace (must be globally unique)"
-      }
-    },
-    "eventHubName": {
-      "type": "string",
-      "defaultValue": "edgedelta-logs",
-      "metadata": {
-        "description": "Name of the Event Hub"
-      }
-    },
-    "location": {
-      "type": "string",
-      "defaultValue": "[resourceGroup().location]",
-      "metadata": {
-        "description": "Location for all resources"
+        "description": "Name of Event Hub namespace (existing or new - must be globally unique)"
       }
     },
     "eventHubSku": {
@@ -34,7 +34,14 @@
         "Premium"
       ],
       "metadata": {
-        "description": "Event Hub SKU (Standard or Premium recommended for Edge Delta)"
+        "description": "Event Hub SKU (only used when creating new namespace)"
+      }
+    },
+    "eventHubName": {
+      "type": "string",
+      "defaultValue": "edgedelta-logs",
+      "metadata": {
+        "description": "Name of the Event Hub to create"
       }
     },
     "partitionCount": {
@@ -55,10 +62,17 @@
         "description": "Message retention in days"
       }
     },
+    "useExistingStorageAccount": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Use existing storage account instead of creating new one"
+      }
+    },
     "storageAccountName": {
       "type": "string",
       "metadata": {
-        "description": "Storage account name for Edge Delta checkpointing (must be globally unique)"
+        "description": "Storage account name (existing or new - must be globally unique, 3-24 lowercase alphanumeric)"
       }
     }
   },
@@ -70,6 +84,7 @@
   },
   "resources": [
     {
+      "condition": "[not(parameters('useExistingNamespace'))]",
       "type": "Microsoft.EventHub/namespaces",
       "apiVersion": "2022-10-01-preview",
       "name": "[parameters('eventHubNamespaceName')]",
@@ -94,9 +109,7 @@
       "apiVersion": "2022-10-01-preview",
       "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'))]",
       "location": "[parameters('location')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]"
-      ],
+      "dependsOn": "[if(parameters('useExistingNamespace'), json('[]'), json(concat('[\"', resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName')), '\"]')))]",
       "properties": {
         "messageRetentionInDays": "[parameters('messageRetentionInDays')]",
         "partitionCount": "[parameters('partitionCount')]",
@@ -142,6 +155,7 @@
       }
     },
     {
+      "condition": "[not(parameters('useExistingStorageAccount'))]",
       "type": "Microsoft.Storage/storageAccounts",
       "apiVersion": "2023-01-01",
       "name": "[parameters('storageAccountName')]",
@@ -158,6 +172,7 @@
       }
     },
     {
+      "condition": "[not(parameters('useExistingStorageAccount'))]",
       "type": "Microsoft.Storage/storageAccounts/blobServices",
       "apiVersion": "2023-01-01",
       "name": "[concat(parameters('storageAccountName'), '/default')]",
@@ -174,9 +189,7 @@
       "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
       "apiVersion": "2023-01-01",
       "name": "[concat(parameters('storageAccountName'), '/default/', variables('checkpointContainerName'))]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
-      ],
+      "dependsOn": "[if(parameters('useExistingStorageAccount'), json('[]'), json(concat('[\"', resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default'), '\"]')))]",
       "properties": {
         "publicAccess": "None"
       }
@@ -215,9 +228,13 @@
       "type": "string",
       "value": "[variables('checkpointContainerName')]"
     },
+    "deploymentMode": {
+      "type": "string",
+      "value": "[if(and(parameters('useExistingNamespace'), parameters('useExistingStorageAccount')), 'Used existing namespace and storage', if(parameters('useExistingNamespace'), 'Used existing namespace, created new storage', if(parameters('useExistingStorageAccount'), 'Created new namespace, used existing storage', 'Created all new resources')))]"
+    },
     "nextSteps": {
       "type": "string",
-      "value": "Resources created successfully! Use the listenConnectionString output for Edge Delta configuration. Configure Azure diagnostic settings to stream logs to this Event Hub."
+      "value": "Resources configured successfully! Use the listenConnectionString output for Edge Delta configuration. Configure Azure diagnostic settings to stream logs to this Event Hub."
     }
   }
 }

@@ -1,19 +1,36 @@
 # Azure Event Hub ARM Template for Edge Delta
 
-This ARM template automates the setup of Azure Event Hub infrastructure for Edge Delta integration.
+This ARM template automates the setup of Azure Event Hub infrastructure for Edge Delta integration. It supports both creating new resources and using existing Event Hub namespaces and storage accounts.
+
+## Deployment Modes
+
+**Create All New Resources (Default)**
+- Creates Event Hub namespace, Event Hub, storage account, and all required configurations
+
+**Use Existing Namespace**
+- Creates Event Hub within your existing namespace
+- Useful if you already have Event Hub namespace infrastructure
+
+**Use Existing Storage Account**
+- Creates checkpoint container in your existing storage account
+- Useful for standardized storage configurations
+
+**Use Both Existing**
+- Maximum flexibility - uses existing infrastructure for both Event Hub and storage
 
 ## What Gets Deployed
 
-This template creates:
-
-- **Event Hub Namespace** - Container for your Event Hub
-- **Event Hub** - Named `edgedelta-logs` by default
+This template always creates:
+- **Event Hub** - Named `edgedelta-logs` by default (created in new or existing namespace)
 - **Consumer Group** - Dedicated `edgedelta-processors` group
 - **Shared Access Policies**:
   - `AzureSendPolicy` - For Azure services to send logs (Send permission)
   - `EdgeDeltaListenPolicy` - For Edge Delta to consume logs (Listen permission)
-- **Storage Account** - For Edge Delta checkpointing
-- **Blob Container** - Named `edgedelta-checkpoints`
+- **Blob Container** - Named `edgedelta-checkpoints` (in new or existing storage account)
+
+Optionally creates (based on parameters):
+- **Event Hub Namespace** - If creating new
+- **Storage Account** - If creating new
 
 ## Prerequisites
 
@@ -27,19 +44,21 @@ This template creates:
 
 Click the button below to deploy:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fdocumentation%2Fprod%2Farm-templates%2Fazure-eventhub-setup.json)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json)
 
 ## Parameters
 
 | Parameter | Description | Default | Required |
 |-----------|-------------|---------|----------|
-| `eventHubNamespaceName` | Name of Event Hub namespace | - | Yes |
-| `eventHubName` | Name of Event Hub | `edgedelta-logs` | No |
-| `location` | Azure region | Resource group location | No |
-| `eventHubSku` | SKU tier | `Standard` | No |
+| `location` | Azure region (dropdown picker) | Resource group location | No |
+| `useExistingNamespace` | Use existing Event Hub namespace | `false` | No |
+| `eventHubNamespaceName` | Name of Event Hub namespace (existing or new) | - | Yes |
+| `eventHubSku` | SKU tier (only for new namespace) | `Standard` | No |
+| `eventHubName` | Name of Event Hub to create | `edgedelta-logs` | No |
 | `partitionCount` | Number of partitions | `4` | No |
 | `messageRetentionInDays` | Message retention | `1` | No |
-| `storageAccountName` | Storage account name | - | Yes |
+| `useExistingStorageAccount` | Use existing storage account | `false` | No |
+| `storageAccountName` | Storage account name (existing or new) | - | Yes |
 
 ## Outputs
 
@@ -47,11 +66,13 @@ After deployment, the template provides these outputs:
 
 - `listenConnectionString` - Use this for Edge Delta configuration
 - `sendConnectionString` - Use this for Azure diagnostic settings
+- `eventHubNamespace` - Event Hub namespace name
 - `eventHubName` - Event Hub name
 - `consumerGroup` - Consumer group name
 - `storageAccountName` - Storage account name
 - `storageAccountKey` - Storage account key
 - `checkpointContainer` - Checkpoint container name
+- `deploymentMode` - Shows which resources were created vs. existing
 
 ## Post-Deployment Steps
 
@@ -63,24 +84,73 @@ See the [Azure Event Hub Setup Guide](../content/en/docs/04-sources/01-log-sourc
 
 ## Manual Deployment
 
-### Azure CLI
+### Create All New Resources
 
+**Azure CLI:**
 ```bash
 az deployment group create \
   --resource-group your-resource-group \
-  --template-file azure-eventhub-setup.json \
+  --template-file azuredeploy.json \
   --parameters eventHubNamespaceName=edgedelta-eh-prod \
-               storageAccountName=edgedeltachkpt123
+               storageAccountName=edgedeltachkpt123 \
+               location=eastus
 ```
 
-### PowerShell
-
+**PowerShell:**
 ```powershell
 New-AzResourceGroupDeployment `
   -ResourceGroupName "your-resource-group" `
-  -TemplateFile "azure-eventhub-setup.json" `
+  -TemplateFile "azuredeploy.json" `
   -eventHubNamespaceName "edgedelta-eh-prod" `
-  -storageAccountName "edgedeltachkpt123"
+  -storageAccountName "edgedeltachkpt123" `
+  -location "eastus"
+```
+
+### Use Existing Namespace
+
+**Azure CLI:**
+```bash
+az deployment group create \
+  --resource-group your-resource-group \
+  --template-file azuredeploy.json \
+  --parameters eventHubNamespaceName=my-existing-namespace \
+               storageAccountName=edgedeltachkpt123 \
+               useExistingNamespace=true
+```
+
+**PowerShell:**
+```powershell
+New-AzResourceGroupDeployment `
+  -ResourceGroupName "your-resource-group" `
+  -TemplateFile "azuredeploy.json" `
+  -eventHubNamespaceName "my-existing-namespace" `
+  -storageAccountName "edgedeltachkpt123" `
+  -useExistingNamespace $true
+```
+
+### Use Existing Storage Account
+
+**Azure CLI:**
+```bash
+az deployment group create \
+  --resource-group your-resource-group \
+  --template-file azuredeploy.json \
+  --parameters eventHubNamespaceName=edgedelta-eh-prod \
+               storageAccountName=my-existing-storage \
+               useExistingStorageAccount=true
+```
+
+### Use Both Existing Resources
+
+**PowerShell:**
+```powershell
+New-AzResourceGroupDeployment `
+  -ResourceGroupName "your-resource-group" `
+  -TemplateFile "azuredeploy.json" `
+  -eventHubNamespaceName "my-existing-namespace" `
+  -storageAccountName "my-existing-storage" `
+  -useExistingNamespace $true `
+  -useExistingStorageAccount $true
 ```
 
 ## Estimated Costs
@@ -125,4 +195,4 @@ az group delete --name your-resource-group --yes
 
 ## Support
 
-For issues with the ARM template, please open an issue in the [Edge Delta documentation repository](https://github.com/edgedelta/documentation/issues).
+For issues with the ARM template, please open an issue in the [Edge Delta Azure Resources repository](https://github.com/edgedelta/edgedelta-azure-resources/issues).
