@@ -22,7 +22,6 @@
         "name": "location",
         "type": "Microsoft.Common.LocationSelector",
         "label": "Location",
-        "defaultValue": "[resourceGroup().location]",
         "toolTip": "Select the Azure region for resources",
         "resourceTypes": [
           "Microsoft.EventHub/namespaces",
