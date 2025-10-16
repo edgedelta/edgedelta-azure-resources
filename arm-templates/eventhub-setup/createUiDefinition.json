@@ -2,7 +2,7 @@
   "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
   "handler": "Microsoft.Azure.CreateUIDef",
   "version": "0.1.2-preview",
-  "_edgeDeltaVersion": "1.0.7",
+  "_edgeDeltaVersion": "1.0.8",
   "parameters": {
     "config": {
       "isWizard": true,
@@ -244,11 +244,6 @@
                 "type": "Microsoft.Solutions.ResourceSelector",
                 "label": "Select existing storage account",
                 "resourceType": "Microsoft.Storage/storageAccounts",
-                "options": {
-                  "filter": {
-                    "subscription": "onBasics"
-                  }
-                },
                 "constraints": {
                   "required": true
                 },
