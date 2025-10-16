@@ -219,7 +219,7 @@
       }
     ],
     "outputs": {
-      "location": "[basics('location')]",
+      "location": "[location()]",
       "useExistingNamespace": "[steps('eventHubConfig').namespaceConfig.useExistingNamespace]",
       "eventHubNamespaceName": "[if(steps('eventHubConfig').namespaceConfig.useExistingNamespace, steps('eventHubConfig').namespaceConfig.existingNamespace.name, steps('eventHubConfig').namespaceConfig.newNamespaceName)]",
       "eventHubSku": "[if(steps('eventHubConfig').namespaceConfig.useExistingNamespace, 'Standard', steps('eventHubConfig').namespaceConfig.eventHubSku)]",
