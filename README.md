@@ -37,6 +37,27 @@ See the [Event Hub setup guide](arm-templates/eventhub-setup/README.md) for deta
 - PowerShell 7+ or Azure CLI (for automation scripts)
 - Edge Delta account
 
+## Development
+
+### Setup Git Hooks
+
+For contributors, install the pre-commit hook to automatically validate templates:
+
+```bash
+./install-hooks.sh
+```
+
+This configures Git to run validation tests automatically before each commit, ensuring all templates pass validation before being committed.
+
+### Running Tests
+
+```bash
+cd arm-templates/eventhub-setup
+./tests/validate-all.sh
+```
+
+See [test documentation](arm-templates/eventhub-setup/tests/README.md) for more details.
+
 ## Support
 
 - [Edge Delta Documentation](https://docs.edgedelta.com/)

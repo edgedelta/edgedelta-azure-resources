@@ -197,12 +197,35 @@ Check the error message for:
 ### "UI definition outputs don't match"
 This is a warning, not an error. Review if all template parameters have corresponding UI outputs.
 
+## Git Pre-Commit Hook
+
+Automate validation by installing the pre-commit hook:
+
+```bash
+# From repository root
+./install-hooks.sh
+```
+
+**What it does:**
+- Automatically runs before every commit
+- Detects if ARM template files changed
+- Runs full validation suite
+- Prevents commit if validation fails
+
+**Bypass if needed:**
+```bash
+git commit --no-verify  # Use sparingly!
+```
+
 ## Best Practices
 
 ### Before Every Commit
+If you haven't installed the pre-commit hook:
 ```bash
 ./tests/validate-all.sh
 ```
+
+With the pre-commit hook installed, this runs automatically!
 
 ### Before Major Changes
 ```bash

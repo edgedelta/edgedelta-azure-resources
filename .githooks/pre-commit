@@ -1,0 +1,45 @@
+#!/bin/bash
+
+# Git Pre-Commit Hook
+# Runs validation tests before allowing commit
+
+echo ""
+echo "=========================================="
+echo "Running pre-commit validation..."
+echo "=========================================="
+echo ""
+
+# Check if ARM template files are being committed
+ARM_TEMPLATES_CHANGED=$(git diff --cached --name-only | grep "arm-templates/.*\.json$" || true)
+
+if [ -z "$ARM_TEMPLATES_CHANGED" ]; then
+    echo "No ARM template changes detected. Skipping validation."
+    exit 0
+fi
+
+echo "ARM template files changed:"
+echo "$ARM_TEMPLATES_CHANGED"
+echo ""
+
+# Run validation tests
+cd "$(git rev-parse --show-toplevel)/arm-templates/eventhub-setup"
+
+if [ ! -f "tests/validate-all.sh" ]; then
+    echo "⚠ Warning: Validation script not found. Allowing commit."
+    exit 0
+fi
+
+# Run the validation
+if bash tests/validate-all.sh; then
+    echo ""
+    echo "✓ Pre-commit validation passed!"
+    echo ""
+    exit 0
+else
+    echo ""
+    echo "✗ Pre-commit validation failed!"
+    echo ""
+    echo "Fix the errors above or use 'git commit --no-verify' to skip this check."
+    echo ""
+    exit 1
+fi
