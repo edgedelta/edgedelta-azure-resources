@@ -169,6 +169,43 @@
                 "visible": true
               }
             ]
+          },
+          {
+            "name": "activityLogConfig",
+            "type": "Microsoft.Common.Section",
+            "label": "Azure Activity Logs",
+            "elements": [
+              {
+                "name": "configureActivityLogs",
+                "type": "Microsoft.Common.OptionsGroup",
+                "label": "Configure subscription activity logs",
+                "defaultValue": "Yes (Recommended)",
+                "toolTip": "Automatically configure your Azure subscription to stream activity logs to this Event Hub. This enables monitoring of all subscription-level operations.",
+                "constraints": {
+                  "allowedValues": [
+                    {
+                      "label": "Yes (Recommended)",
+                      "value": true
+                    },
+                    {
+                      "label": "No - Configure manually later",
+                      "value": false
+                    }
+                  ],
+                  "required": true
+                },
+                "visible": true
+              },
+              {
+                "name": "activityLogInfo",
+                "type": "Microsoft.Common.InfoBox",
+                "options": {
+                  "icon": "Info",
+                  "text": "Activity logs include: Administrative operations, Security events, Service Health, Alerts, Recommendations, Policy, Autoscale, and Resource Health events."
+                },
+                "visible": true
+              }
+            ]
           }
         ]
       },
@@ -249,6 +286,7 @@
       "eventHubName": "[steps('eventHubConfig').eventHubSettings.eventHubName]",
       "partitionCount": "[steps('eventHubConfig').eventHubSettings.partitionCount]",
       "messageRetentionInDays": "[steps('eventHubConfig').eventHubSettings.messageRetentionInDays]",
+      "configureActivityLogs": "[steps('eventHubConfig').activityLogConfig.configureActivityLogs]",
       "useExistingStorageAccount": "[steps('storageConfig').storageAccount.useExistingStorageAccount]",
       "storageAccountName": "[if(steps('storageConfig').storageAccount.useExistingStorageAccount, steps('storageConfig').storageAccount.existingStorageAccount.name, steps('storageConfig').storageAccount.newStorageAccountName.name)]"
     }

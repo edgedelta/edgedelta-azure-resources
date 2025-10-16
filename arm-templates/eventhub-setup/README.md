@@ -31,6 +31,7 @@ This template always creates:
 Optionally creates (based on parameters):
 - **Event Hub Namespace** - If creating new
 - **Storage Account** - If creating new
+- **Subscription Activity Log Diagnostic Settings** - Automatically streams all Azure subscription activity logs to Event Hub (enabled by default)
 
 ## What's Included
 
@@ -73,6 +74,7 @@ Click the button below to deploy with an interactive UI that shows dropdowns for
 | `eventHubName` | Name of Event Hub to create | `edgedelta-logs` | No |
 | `partitionCount` | Number of partitions | `4` | No |
 | `messageRetentionInDays` | Message retention | `1` | No |
+| `configureActivityLogs` | Auto-configure subscription activity logs | `true` | No |
 | `useExistingStorageAccount` | Use existing storage account | `false` | No |
 | `storageAccountName` | Storage account name (existing or new) | - | Yes |
 
@@ -97,6 +99,7 @@ After deployment, the template provides these outputs mapped directly to Edge De
 - `eventHubNamespace` - Event Hub namespace name
 - `eventHubName` - Event Hub name
 - `deploymentSummary` - Shows which resources were created vs. existing
+- `activityLogsConfigured` - Confirms whether subscription activity logs were automatically configured
 - `instructions` - Quick guidance on using the outputs
 
 > **Security Note:** Connection strings and storage keys are sensitive. The deployment outputs are stored in Azure deployment history. Ensure only authorized personnel have access to the resource group.
@@ -110,11 +113,16 @@ After deployment, the template provides these outputs mapped directly to Edge De
    - `storageAccountKey` → Storage Account Key field
    - `storageContainerName` → Storage Container Name field
 
-2. **Configure Azure Diagnostic Settings** - Set up Azure resources to stream logs to this Event Hub:
+2. **Verify Activity Logs** - If you enabled automatic activity log configuration (default):
+   - Subscription-level activity logs are now streaming to your Event Hub
+   - Includes: Administrative operations, Security events, Service Health, Alerts, Recommendations, Policy, Autoscale, and Resource Health
+   - Check the `activityLogsConfigured` output to confirm
+
+3. **Configure Additional Resource Diagnostic Settings** (Optional) - Set up individual Azure resources to stream their logs to this Event Hub:
    - Use the `azureDiagnosticConnectionString` output when configuring diagnostic settings
    - See [Azure streaming setup guide](https://docs.edgedelta.com/event-hub-source-node/azure-streaming-setup/) for step-by-step instructions
 
-3. **Verify** - Check that events are flowing:
+4. **Verify** - Check that events are flowing:
    - Azure Portal: Monitor Event Hub metrics for incoming messages
    - Edge Delta: Verify logs are being received in your pipeline
 
@@ -129,7 +137,8 @@ az deployment group create \
   --template-file azuredeploy.json \
   --parameters eventHubNamespaceName=edgedelta-eh-prod \
                storageAccountName=edgedeltachkpt123 \
-               location=eastus
+               location=eastus \
+               configureActivityLogs=true
 ```
 
 **PowerShell:**
@@ -139,7 +148,8 @@ New-AzResourceGroupDeployment `
   -TemplateFile "azuredeploy.json" `
   -eventHubNamespaceName "edgedelta-eh-prod" `
   -storageAccountName "edgedeltachkpt123" `
-  -location "eastus"
+  -location "eastus" `
+  -configureActivityLogs $true
 ```
 
 ### Use Existing Namespace

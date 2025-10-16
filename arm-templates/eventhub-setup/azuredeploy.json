@@ -1,13 +1,13 @@
 {
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
-  "contentVersion": "1.0.5.0",
+  "contentVersion": "1.0.6.0",
   "metadata": {
     "_generator": {
       "name": "Edge Delta",
-      "version": "1.0.5.0"
+      "version": "1.0.6.0"
     },
-    "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. Creates Event Hub namespace, Event Hub, consumer groups, access policies, and storage account for checkpoint management.",
-    "summary": "One-click deployment of Azure Event Hub infrastructure for Edge Delta telemetry streaming",
+    "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. Creates Event Hub namespace, Event Hub, consumer groups, access policies, storage account for checkpoint management, and optionally configures subscription activity logs.",
+    "summary": "One-click deployment of Azure Event Hub infrastructure with automatic activity log streaming for Edge Delta",
     "githubUsername": "edgedelta",
     "dateUpdated": "2025-10-16",
     "type": "QuickStart"
@@ -81,13 +81,21 @@
       "metadata": {
         "description": "Storage account name (existing or new - must be globally unique, 3-24 lowercase alphanumeric)"
       }
+    },
+    "configureActivityLogs": {
+      "type": "bool",
+      "defaultValue": true,
+      "metadata": {
+        "description": "Automatically configure Azure subscription activity logs to stream to this Event Hub"
+      }
     }
   },
   "variables": {
     "consumerGroupName": "edgedelta-processors",
     "sendAuthRuleName": "AzureSendPolicy",
     "listenAuthRuleName": "EdgeDeltaListenPolicy",
-    "checkpointContainerName": "edgedelta-checkpoints"
+    "checkpointContainerName": "edgedelta-checkpoints",
+    "diagnosticSettingName": "edgedelta-activity-logs"
   },
   "resources": [
     {
@@ -205,6 +213,94 @@
       "properties": {
         "publicAccess": "None"
       }
+    },
+    {
+      "condition": "[parameters('configureActivityLogs')]",
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "activityLogDiagnosticSettings",
+      "location": "[parameters('location')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
+        "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('sendAuthRuleName'))]"
+      ],
+      "properties": {
+        "mode": "Incremental",
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "parameters": {
+          "eventHubAuthorizationRuleId": {
+            "value": "[resourceId('Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespaceName'), 'RootManageSharedAccessKey')]"
+          },
+          "eventHubName": {
+            "value": "[parameters('eventHubName')]"
+          },
+          "diagnosticSettingName": {
+            "value": "[variables('diagnosticSettingName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "eventHubAuthorizationRuleId": {
+              "type": "string"
+            },
+            "eventHubName": {
+              "type": "string"
+            },
+            "diagnosticSettingName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Insights/diagnosticSettings",
+              "apiVersion": "2021-05-01-preview",
+              "name": "[parameters('diagnosticSettingName')]",
+              "properties": {
+                "eventHubAuthorizationRuleId": "[parameters('eventHubAuthorizationRuleId')]",
+                "eventHubName": "[parameters('eventHubName')]",
+                "logs": [
+                  {
+                    "category": "Administrative",
+                    "enabled": true
+                  },
+                  {
+                    "category": "Security",
+                    "enabled": true
+                  },
+                  {
+                    "category": "ServiceHealth",
+                    "enabled": true
+                  },
+                  {
+                    "category": "Alert",
+                    "enabled": true
+                  },
+                  {
+                    "category": "Recommendation",
+                    "enabled": true
+                  },
+                  {
+                    "category": "Policy",
+                    "enabled": true
+                  },
+                  {
+                    "category": "Autoscale",
+                    "enabled": true
+                  },
+                  {
+                    "category": "ResourceHealth",
+                    "enabled": true
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      }
     }
   ],
   "outputs": {
@@ -273,6 +369,13 @@
       "value": "[if(and(parameters('useExistingNamespace'), parameters('useExistingStorageAccount')), 'Used existing namespace and storage', if(parameters('useExistingNamespace'), 'Used existing namespace, created new storage', if(parameters('useExistingStorageAccount'), 'Created new namespace, used existing storage', 'Created all new resources')))]",
       "metadata": {
         "description": "Summary of what was created vs. existing"
+      }
+    },
+    "activityLogsConfigured": {
+      "type": "string",
+      "value": "[if(parameters('configureActivityLogs'), 'Yes - Subscription activity logs are now streaming to Event Hub', 'No - Manual configuration required')]",
+      "metadata": {
+        "description": "Whether subscription activity logs were automatically configured"
       }
     }
   }
