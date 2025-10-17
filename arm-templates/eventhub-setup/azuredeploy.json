@@ -340,6 +340,18 @@
             "listenAuthRuleName": {
               "type": "string",
               "value": "[parameters('listenAuthRuleName')]"
+            },
+            "connectionString": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('listenAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+            },
+            "azureDiagnosticConnectionString": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('sendAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+            },
+            "storageAccountKey": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value]"
             }
           }
         }
@@ -400,7 +412,7 @@
     },
     "connectionString": {
       "type": "string",
-      "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('listenAuthRuleName')), '2022-10-01-preview').primaryConnectionString]",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.connectionString.value]",
       "metadata": {
         "description": "Edge Delta Field: Connection String (required)"
       }
@@ -421,7 +433,7 @@
     },
     "storageAccountKey": {
       "type": "string",
-      "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value]",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.storageAccountKey.value]",
       "metadata": {
         "description": "Edge Delta Field: Storage Account Key (optional)"
       }
@@ -435,7 +447,7 @@
     },
     "azureDiagnosticConnectionString": {
       "type": "string",
-      "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('sendAuthRuleName')), '2022-10-01-preview').primaryConnectionString]",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.azureDiagnosticConnectionString.value]",
       "metadata": {
         "description": "Use this for Azure diagnostic settings (Send permission)"
       }
