@@ -31,7 +31,7 @@ This template always creates:
 Optionally creates (based on parameters):
 - **Event Hub Namespace** - If creating new
 - **Storage Account** - If creating new
-- **Subscription Activity Log Diagnostic Settings** - Automatically streams all Azure subscription activity logs to Event Hub (enabled by default)
+- **Subscription Activity Log Diagnostic Settings** - Can automatically configure activity logs (manual configuration recommended)
 
 ## What's Included
 
@@ -59,7 +59,7 @@ The UI definition provides an enhanced deployment experience with:
 
 Click the button below to deploy with an interactive UI that shows dropdowns for existing resources:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Fv%3D1.0.10/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Fv%3D1.0.10)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Fv%3D1.0.11/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Fv%3D1.0.11)
 
 > The deployment wizard will show resource pickers for existing Event Hub namespaces and storage accounts when you select "Use existing".
 
@@ -74,7 +74,7 @@ Click the button below to deploy with an interactive UI that shows dropdowns for
 | `eventHubName` | Name of Event Hub to create | `edgedelta-logs` | No |
 | `partitionCount` | Number of partitions | `4` | No |
 | `messageRetentionInDays` | Message retention | `1` | No |
-| `configureActivityLogs` | Auto-configure subscription activity logs | `true` | No |
+| `configureActivityLogs` | Auto-configure subscription activity logs | `false` | No |
 | `useExistingStorageAccount` | Use existing storage account | `false` | No |
 | `storageAccountName` | Storage account name (existing or new) | - | Yes |
 
@@ -113,10 +113,14 @@ After deployment, the template provides these outputs mapped directly to Edge De
    - `storageAccountKey` → Storage Account Key field
    - `storageContainerName` → Storage Container Name field
 
-2. **Verify Activity Logs** - If you enabled automatic activity log configuration (default):
-   - Subscription-level activity logs are now streaming to your Event Hub
-   - Includes: Administrative operations, Security events, Service Health, Alerts, Recommendations, Policy, Autoscale, and Resource Health
-   - Check the `activityLogsConfigured` output to confirm
+2. **Configure Subscription Activity Logs** (Recommended) - Manually configure Azure subscription activity logs:
+   - Navigate to Azure Portal → Monitor → Diagnostic settings
+   - Click "Add diagnostic setting"
+   - Select all log categories you want (Administrative, Security, Service Health, etc.)
+   - Choose "Stream to an event hub"
+   - Select your Event Hub namespace and `edgedelta-logs` Event Hub
+   - Use the `azureDiagnosticConnectionString` authorization (or select RootManageSharedAccessKey)
+   - Click "Save"
 
 3. **Configure Additional Resource Diagnostic Settings** (Optional) - Set up individual Azure resources to stream their logs to this Event Hub:
    - Use the `azureDiagnosticConnectionString` output when configuring diagnostic settings
@@ -137,8 +141,7 @@ az deployment group create \
   --template-file azuredeploy.json \
   --parameters eventHubNamespaceName=edgedelta-eh-prod \
                storageAccountName=edgedeltachkpt123 \
-               location=eastus \
-               configureActivityLogs=true
+               location=eastus
 ```
 
 **PowerShell:**
@@ -148,8 +151,7 @@ New-AzResourceGroupDeployment `
   -TemplateFile "azuredeploy.json" `
   -eventHubNamespaceName "edgedelta-eh-prod" `
   -storageAccountName "edgedeltachkpt123" `
-  -location "eastus" `
-  -configureActivityLogs $true
+  -location "eastus"
 ```
 
 ### Use Existing Namespace
