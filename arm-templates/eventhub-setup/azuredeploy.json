@@ -354,7 +354,7 @@
         "[variables('nestedDeploymentName')]"
       ],
       "properties": {
-        "eventHubAuthorizationRuleId": "[resourceId(parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespaceName'), 'RootManageSharedAccessKey')]",
+        "eventHubAuthorizationRuleId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespaceName'), 'RootManageSharedAccessKey')]",
         "eventHubName": "[parameters('eventHubName')]",
         "logs": [
           {
@@ -400,7 +400,7 @@
     },
     "connectionString": {
       "type": "string",
-      "value": "[listKeys(resourceId(parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), reference(variables('nestedDeploymentName')).outputs.listenAuthRuleName.value), '2022-10-01-preview').primaryConnectionString]",
+      "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('listenAuthRuleName')), '2022-10-01-preview').primaryConnectionString]",
       "metadata": {
         "description": "Edge Delta Field: Connection String (required)"
       }
@@ -421,7 +421,7 @@
     },
     "storageAccountKey": {
       "type": "string",
-      "value": "[listKeys(resourceId(parameters('resourceGroupName'), 'Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value]",
+      "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value]",
       "metadata": {
         "description": "Edge Delta Field: Storage Account Key (optional)"
       }
@@ -435,7 +435,7 @@
     },
     "azureDiagnosticConnectionString": {
       "type": "string",
-      "value": "[listKeys(resourceId(parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), reference(variables('nestedDeploymentName')).outputs.sendAuthRuleName.value), '2022-10-01-preview').primaryConnectionString]",
+      "value": "[listKeys(resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), variables('sendAuthRuleName')), '2022-10-01-preview').primaryConnectionString]",
       "metadata": {
         "description": "Use this for Azure diagnostic settings (Send permission)"
       }
