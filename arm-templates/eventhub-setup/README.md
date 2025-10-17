@@ -61,9 +61,7 @@ The UI definition provides an enhanced deployment experience with:
 
 Click the button below to deploy with an interactive UI that shows dropdowns for existing resources:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fdaniel-edgedelta%252Fsubscription-level-template%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Ft%3D20251017152000/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fdaniel-edgedelta%252Fsubscription-level-template%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Ft%3D20251017152000)
-
-> **⚠️ TESTING ONLY**: This button points to the feature branch `daniel-edgedelta/subscription-level-template` for testing. Will be changed back to `main` before merge.
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fprod%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Ft%3D20251017152000/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fprod%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Ft%3D20251017152000)
 
 > **v1.0.12+**: The deployment wizard will first prompt you to select an existing resource group, then show resource pickers for existing Event Hub namespaces and storage accounts when you select "Use existing".
 
