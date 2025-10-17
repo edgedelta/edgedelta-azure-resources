@@ -91,6 +91,22 @@ description: Expert knowledge for using Azure Resource Manager (ARM) template fu
 // Returns: /subscriptions/{sub}/providers/Microsoft.EventHub/namespaces/{name}
 ```
 
+**⚠️ CRITICAL: Cross-Scope from Subscription Template to Resource Group Resources**
+
+When in a **subscription-level template** referencing resources IN a resource group:
+```json
+// ❌ WRONG - Will fail with "not valid subscription identifier"
+"[resourceId(parameters('resourceGroupName'), 'Microsoft.Storage/storageAccounts', parameters('name'))]"
+
+// ✅ CORRECT - Must include subscription ID
+"[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.Storage/storageAccounts', parameters('name'))]"
+```
+
+This applies to:
+- listKeys() calls
+- Any resourceId() in outputs or properties
+- Diagnostic settings eventHubAuthorizationRuleId
+
 **Management Group/Tenant:**
 ```json
 "[tenantResourceId('Microsoft.Authorization/policyDefinitions', parameters('name'))]"
