@@ -1,0 +1,36 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "location": {
+      "value": "eastus"
+    },
+    "useExistingNamespace": {
+      "value": false
+    },
+    "eventHubNamespaceName": {
+      "value": "edgedelta-test-eh-new"
+    },
+    "eventHubSku": {
+      "value": "Standard"
+    },
+    "eventHubName": {
+      "value": "edgedelta-logs"
+    },
+    "partitionCount": {
+      "value": 4
+    },
+    "messageRetentionInDays": {
+      "value": 1
+    },
+    "configureActivityLogs": {
+      "value": false
+    },
+    "useExistingStorageAccount": {
+      "value": false
+    },
+    "storageAccountName": {
+      "value": "edtestchkptnew"
+    }
+  }
+}

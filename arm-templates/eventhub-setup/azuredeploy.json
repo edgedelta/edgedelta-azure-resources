@@ -1,0 +1,485 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentTemplate.json#",
+  "contentVersion": "1.0.12.0",
+  "metadata": {
+    "_generator": {
+      "name": "Edge Delta",
+      "version": "1.0.12.0"
+    },
+    "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. Creates Event Hub namespace, Event Hub, consumer groups, access policies, storage account for checkpoint management, and optionally configures subscription activity logs.",
+    "summary": "One-click deployment of Azure Event Hub infrastructure with automatic activity log streaming for Edge Delta",
+    "githubUsername": "edgedelta",
+    "dateUpdated": "2025-10-16",
+    "type": "QuickStart"
+  },
+  "parameters": {
+    "resourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of existing resource group for Event Hub and storage resources (must exist before deployment)"
+      }
+    },
+    "location": {
+      "type": "string",
+      "metadata": {
+        "description": "Azure region for resources (defaults to resource group location if not specified)"
+      }
+    },
+    "useExistingNamespace": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Use existing Event Hub namespace instead of creating new one"
+      }
+    },
+    "eventHubNamespaceName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of Event Hub namespace (existing or new - must be globally unique)"
+      }
+    },
+    "eventHubSku": {
+      "type": "string",
+      "defaultValue": "Standard",
+      "allowedValues": [
+        "Standard",
+        "Premium"
+      ],
+      "metadata": {
+        "description": "Event Hub SKU (only used when creating new namespace). Basic tier is not supported as it does not support consumer groups required by Edge Delta."
+      }
+    },
+    "eventHubName": {
+      "type": "string",
+      "defaultValue": "edgedelta-logs",
+      "metadata": {
+        "description": "Name of the Event Hub to create"
+      }
+    },
+    "partitionCount": {
+      "type": "int",
+      "defaultValue": 4,
+      "minValue": 2,
+      "maxValue": 32,
+      "metadata": {
+        "description": "Number of partitions (2-4 for low volume, 8-32 for high volume)"
+      }
+    },
+    "messageRetentionInDays": {
+      "type": "int",
+      "defaultValue": 1,
+      "minValue": 1,
+      "maxValue": 7,
+      "metadata": {
+        "description": "Message retention in days"
+      }
+    },
+    "useExistingStorageAccount": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Use existing storage account instead of creating new one"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "metadata": {
+        "description": "Storage account name (existing or new - must be globally unique, 3-24 lowercase alphanumeric)"
+      }
+    },
+    "configureActivityLogs": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "Automatically configure Azure subscription activity logs to stream to this Event Hub (requires subscription-level permissions)"
+      }
+    }
+  },
+  "variables": {
+    "consumerGroupName": "edgedelta-processors",
+    "sendAuthRuleName": "AzureSendPolicy",
+    "listenAuthRuleName": "EdgeDeltaListenPolicy",
+    "checkpointContainerName": "edgedelta-checkpoints",
+    "diagnosticSettingName": "[concat('edgedelta-activity-logs-', uniqueString(subscription().subscriptionId, parameters('resourceGroupName')))]",
+    "nestedDeploymentName": "eventHubResourcesDeployment"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2021-04-01",
+      "name": "[variables('nestedDeploymentName')]",
+      "resourceGroup": "[parameters('resourceGroupName')]",
+      "properties": {
+        "mode": "Incremental",
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
+        "parameters": {
+          "location": {
+            "value": "[parameters('location')]"
+          },
+          "useExistingNamespace": {
+            "value": "[parameters('useExistingNamespace')]"
+          },
+          "eventHubNamespaceName": {
+            "value": "[parameters('eventHubNamespaceName')]"
+          },
+          "eventHubSku": {
+            "value": "[parameters('eventHubSku')]"
+          },
+          "eventHubName": {
+            "value": "[parameters('eventHubName')]"
+          },
+          "partitionCount": {
+            "value": "[parameters('partitionCount')]"
+          },
+          "messageRetentionInDays": {
+            "value": "[parameters('messageRetentionInDays')]"
+          },
+          "useExistingStorageAccount": {
+            "value": "[parameters('useExistingStorageAccount')]"
+          },
+          "storageAccountName": {
+            "value": "[parameters('storageAccountName')]"
+          },
+          "consumerGroupName": {
+            "value": "[variables('consumerGroupName')]"
+          },
+          "sendAuthRuleName": {
+            "value": "[variables('sendAuthRuleName')]"
+          },
+          "listenAuthRuleName": {
+            "value": "[variables('listenAuthRuleName')]"
+          },
+          "checkpointContainerName": {
+            "value": "[variables('checkpointContainerName')]"
+          }
+        },
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "location": {
+              "type": "string"
+            },
+            "useExistingNamespace": {
+              "type": "bool"
+            },
+            "eventHubNamespaceName": {
+              "type": "string"
+            },
+            "eventHubSku": {
+              "type": "string"
+            },
+            "eventHubName": {
+              "type": "string"
+            },
+            "partitionCount": {
+              "type": "int"
+            },
+            "messageRetentionInDays": {
+              "type": "int"
+            },
+            "useExistingStorageAccount": {
+              "type": "bool"
+            },
+            "storageAccountName": {
+              "type": "string"
+            },
+            "consumerGroupName": {
+              "type": "string"
+            },
+            "sendAuthRuleName": {
+              "type": "string"
+            },
+            "listenAuthRuleName": {
+              "type": "string"
+            },
+            "checkpointContainerName": {
+              "type": "string"
+            }
+          },
+          "resources": [
+            {
+              "condition": "[not(parameters('useExistingNamespace'))]",
+              "type": "Microsoft.EventHub/namespaces",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[parameters('eventHubNamespaceName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "[parameters('eventHubSku')]",
+                "tier": "[parameters('eventHubSku')]",
+                "capacity": 1
+              },
+              "properties": {
+                "minimumTlsVersion": "1.2",
+                "publicNetworkAccess": "Enabled",
+                "disableLocalAuth": false,
+                "zoneRedundant": false,
+                "isAutoInflateEnabled": false,
+                "maximumThroughputUnits": 0,
+                "kafkaEnabled": true
+              }
+            },
+            {
+              "type": "Microsoft.EventHub/namespaces/eventhubs",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces', parameters('eventHubNamespaceName'))]"
+              ],
+              "properties": {
+                "messageRetentionInDays": "[parameters('messageRetentionInDays')]",
+                "partitionCount": "[parameters('partitionCount')]",
+                "status": "Active"
+              }
+            },
+            {
+              "type": "Microsoft.EventHub/namespaces/eventhubs/consumergroups",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'), '/', parameters('consumerGroupName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]"
+              ],
+              "properties": {}
+            },
+            {
+              "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'), '/', parameters('sendAuthRuleName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]"
+              ],
+              "properties": {
+                "rights": [
+                  "Send"
+                ]
+              }
+            },
+            {
+              "type": "Microsoft.EventHub/namespaces/eventhubs/authorizationRules",
+              "apiVersion": "2022-10-01-preview",
+              "name": "[concat(parameters('eventHubNamespaceName'), '/', parameters('eventHubName'), '/', parameters('listenAuthRuleName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs', parameters('eventHubNamespaceName'), parameters('eventHubName'))]",
+                "[resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('sendAuthRuleName'))]"
+              ],
+              "properties": {
+                "rights": [
+                  "Listen"
+                ]
+              }
+            },
+            {
+              "condition": "[not(parameters('useExistingStorageAccount'))]",
+              "type": "Microsoft.Storage/storageAccounts",
+              "apiVersion": "2023-01-01",
+              "name": "[parameters('storageAccountName')]",
+              "location": "[parameters('location')]",
+              "sku": {
+                "name": "Standard_LRS"
+              },
+              "kind": "StorageV2",
+              "properties": {
+                "minimumTlsVersion": "TLS1_2",
+                "allowBlobPublicAccess": false,
+                "supportsHttpsTrafficOnly": true,
+                "accessTier": "Hot"
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices",
+              "apiVersion": "2023-01-01",
+              "name": "[concat(parameters('storageAccountName'), '/default')]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName'))]"
+              ],
+              "properties": {
+                "deleteRetentionPolicy": {
+                  "enabled": false
+                }
+              }
+            },
+            {
+              "type": "Microsoft.Storage/storageAccounts/blobServices/containers",
+              "apiVersion": "2023-01-01",
+              "name": "[concat(parameters('storageAccountName'), '/default/', parameters('checkpointContainerName'))]",
+              "dependsOn": [
+                "[resourceId('Microsoft.Storage/storageAccounts/blobServices', parameters('storageAccountName'), 'default')]"
+              ],
+              "properties": {
+                "publicAccess": "None"
+              }
+            }
+          ],
+          "outputs": {
+            "eventHubNamespaceName": {
+              "type": "string",
+              "value": "[parameters('eventHubNamespaceName')]"
+            },
+            "eventHubName": {
+              "type": "string",
+              "value": "[parameters('eventHubName')]"
+            },
+            "consumerGroupName": {
+              "type": "string",
+              "value": "[parameters('consumerGroupName')]"
+            },
+            "storageAccountName": {
+              "type": "string",
+              "value": "[parameters('storageAccountName')]"
+            },
+            "checkpointContainerName": {
+              "type": "string",
+              "value": "[parameters('checkpointContainerName')]"
+            },
+            "sendAuthRuleName": {
+              "type": "string",
+              "value": "[parameters('sendAuthRuleName')]"
+            },
+            "listenAuthRuleName": {
+              "type": "string",
+              "value": "[parameters('listenAuthRuleName')]"
+            },
+            "connectionString": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('listenAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+            },
+            "azureDiagnosticConnectionString": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.EventHub/namespaces/eventhubs/authorizationRules', parameters('eventHubNamespaceName'), parameters('eventHubName'), parameters('sendAuthRuleName')), '2022-10-01-preview').primaryConnectionString]"
+            },
+            "storageAccountKey": {
+              "type": "string",
+              "value": "[listKeys(resourceId('Microsoft.Storage/storageAccounts', parameters('storageAccountName')), '2023-01-01').keys[0].value]"
+            }
+          }
+        }
+      }
+    },
+    {
+      "condition": "[parameters('configureActivityLogs')]",
+      "type": "Microsoft.Insights/diagnosticSettings",
+      "apiVersion": "2021-05-01-preview",
+      "name": "[variables('diagnosticSettingName')]",
+      "location": "global",
+      "dependsOn": [
+        "[variables('nestedDeploymentName')]"
+      ],
+      "properties": {
+        "eventHubAuthorizationRuleId": "[resourceId(subscription().subscriptionId, parameters('resourceGroupName'), 'Microsoft.EventHub/namespaces/authorizationRules', parameters('eventHubNamespaceName'), 'RootManageSharedAccessKey')]",
+        "eventHubName": "[parameters('eventHubName')]",
+        "logs": [
+          {
+            "category": "Administrative",
+            "enabled": true
+          },
+          {
+            "category": "Security",
+            "enabled": true
+          },
+          {
+            "category": "ServiceHealth",
+            "enabled": true
+          },
+          {
+            "category": "Alert",
+            "enabled": true
+          },
+          {
+            "category": "Recommendation",
+            "enabled": true
+          },
+          {
+            "category": "Policy",
+            "enabled": true
+          },
+          {
+            "category": "Autoscale",
+            "enabled": true
+          },
+          {
+            "category": "ResourceHealth",
+            "enabled": true
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "instructions": {
+      "type": "string",
+      "value": "Copy these values to your Edge Delta Azure Event Hub Source configuration. For Azure diagnostic settings, use the 'azureDiagnosticConnectionString' output."
+    },
+    "connectionString": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.connectionString.value]",
+      "metadata": {
+        "description": "Edge Delta Field: Connection String (required)"
+      }
+    },
+    "consumerGroup": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.consumerGroupName.value]",
+      "metadata": {
+        "description": "Edge Delta Field: Consumer Group (optional)"
+      }
+    },
+    "storageAccountName": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.storageAccountName.value]",
+      "metadata": {
+        "description": "Edge Delta Field: Storage Account Name (optional)"
+      }
+    },
+    "storageAccountKey": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.storageAccountKey.value]",
+      "metadata": {
+        "description": "Edge Delta Field: Storage Account Key (optional)"
+      }
+    },
+    "storageContainerName": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.checkpointContainerName.value]",
+      "metadata": {
+        "description": "Edge Delta Field: Storage Container Name (optional)"
+      }
+    },
+    "azureDiagnosticConnectionString": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.azureDiagnosticConnectionString.value]",
+      "metadata": {
+        "description": "Use this for Azure diagnostic settings (Send permission)"
+      }
+    },
+    "eventHubNamespace": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.eventHubNamespaceName.value]",
+      "metadata": {
+        "description": "Event Hub namespace name"
+      }
+    },
+    "eventHubName": {
+      "type": "string",
+      "value": "[reference(variables('nestedDeploymentName')).outputs.eventHubName.value]",
+      "metadata": {
+        "description": "Event Hub name"
+      }
+    },
+    "deploymentSummary": {
+      "type": "string",
+      "value": "[if(and(parameters('useExistingNamespace'), parameters('useExistingStorageAccount')), 'Used existing namespace and storage', if(parameters('useExistingNamespace'), 'Used existing namespace, created new storage', if(parameters('useExistingStorageAccount'), 'Created new namespace, used existing storage', 'Created all new resources')))]",
+      "metadata": {
+        "description": "Summary of what was created vs. existing"
+      }
+    },
+    "activityLogsConfigured": {
+      "type": "string",
+      "value": "[if(parameters('configureActivityLogs'), 'Yes - Subscription activity logs are now streaming to Event Hub', 'No - Manual configuration required')]",
+      "metadata": {
+        "description": "Whether subscription activity logs were automatically configured"
+      }
+    }
+  }
+}

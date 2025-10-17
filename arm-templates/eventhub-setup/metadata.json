@@ -1,0 +1,13 @@
+{
+  "$schema": "https://aka.ms/azure-quickstart-templates-metadata-schema#",
+  "type": "QuickStart",
+  "itemDisplayName": "Edge Delta Azure Event Hub Integration",
+  "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration with automatic activity log streaming.",
+  "summary": "Creates Event Hub namespace, Event Hub, consumer groups, access policies, storage, and optionally configures subscription activity logs for Edge Delta telemetry streaming.",
+  "githubUsername": "edgedelta",
+  "dateUpdated": "2025-10-16",
+  "environments": [
+    "AzureCloud"
+  ],
+  "icon": "https://edgedelta.com/brand-assets/edge-delta-logos/gradient/Edge-delta_logo-dark-light-bg.png"
+}
