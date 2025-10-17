@@ -91,7 +91,7 @@ else
     fi
 
     echo "  Validating subscription-level template against Azure..."
-    if az deployment sub validate \
+    VALIDATION_OUTPUT=$(az deployment sub validate \
         --location "$LOCATION" \
         --template-file "$TEMPLATE_DIR/azuredeploy.json" \
         --parameters \
@@ -100,10 +100,16 @@ else
             storageAccountName="testchk$(date +%s | tail -c 8)" \
             location="eastus" \
             configureActivityLogs=false \
-        --output none 2>&1; then
+        2>&1)
+
+    VALIDATION_EXIT_CODE=$?
+
+    if [ $VALIDATION_EXIT_CODE -eq 0 ]; then
         echo -e "${GREEN}✓${NC} Azure template validation passed"
     else
         echo -e "${RED}✗${NC} Azure template validation failed"
+        echo "  Error details:"
+        echo "$VALIDATION_OUTPUT" | head -20
         exit 1
     fi
 fi

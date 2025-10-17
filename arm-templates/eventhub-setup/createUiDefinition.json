@@ -2,12 +2,12 @@
   "$schema": "https://schema.management.azure.com/schemas/0.1.2-preview/CreateUIDefinition.MultiVm.json#",
   "handler": "Microsoft.Azure.CreateUIDef",
   "version": "0.1.2-preview",
-  "_edgeDeltaVersion": "1.0.11",
+  "_edgeDeltaVersion": "1.0.12",
   "parameters": {
     "config": {
       "isWizard": true,
       "basics": {
-        "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration. This template creates Event Hub, consumer groups, access policies, and storage for checkpointing.\n\n⚠️ IMPORTANT: If using an existing Event Hub namespace, it MUST be Standard or Premium tier. Basic tier is not supported.",
+        "description": "Deploy Azure Event Hub infrastructure for Edge Delta integration at subscription level. This template creates Event Hub, consumer groups, access policies, and storage for checkpointing.\n\n⚠️ PREREQUISITES:\n• An existing resource group (must be created before deployment)\n• If using existing Event Hub namespace: MUST be Standard or Premium tier (Basic not supported)",
         "location": {
           "visible": true,
           "allowedValues": []
@@ -32,6 +32,32 @@
       }
     ],
     "steps": [
+      {
+        "name": "resourceGroupConfig",
+        "label": "Resource Group",
+        "elements": [
+          {
+            "name": "prerequisiteInfo",
+            "type": "Microsoft.Common.InfoBox",
+            "options": {
+              "icon": "Info",
+              "text": "This deployment requires an existing resource group. The resource group must be created before starting this deployment."
+            },
+            "visible": true
+          },
+          {
+            "name": "existingResourceGroup",
+            "type": "Microsoft.Solutions.ResourceSelector",
+            "label": "Select existing resource group",
+            "resourceType": "Microsoft.Resources/resourceGroups",
+            "toolTip": "Choose the resource group where Event Hub and storage resources will be deployed",
+            "constraints": {
+              "required": true
+            },
+            "visible": true
+          }
+        ]
+      },
       {
         "name": "eventHubConfig",
         "label": "Event Hub Configuration",
@@ -276,6 +302,7 @@
       }
     ],
     "outputs": {
+      "resourceGroupName": "[steps('resourceGroupConfig').existingResourceGroup.name]",
       "location": "[location()]",
       "useExistingNamespace": "[steps('eventHubConfig').namespaceConfig.useExistingNamespace]",
       "eventHubNamespaceName": "[if(steps('eventHubConfig').namespaceConfig.useExistingNamespace, steps('eventHubConfig').namespaceConfig.existingNamespace.name, steps('eventHubConfig').namespaceConfig.newNamespaceName)]",
