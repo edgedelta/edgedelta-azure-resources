@@ -362,6 +362,7 @@
       "type": "Microsoft.Insights/diagnosticSettings",
       "apiVersion": "2021-05-01-preview",
       "name": "[variables('diagnosticSettingName')]",
+      "location": "global",
       "dependsOn": [
         "[variables('nestedDeploymentName')]"
       ],
