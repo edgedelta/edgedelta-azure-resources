@@ -9,7 +9,10 @@
       "basics": {
         "description": "**Edge Delta Event Hub Setup - v1.0.12**\n\nDeploy Azure Event Hub infrastructure for Edge Delta integration at subscription level. This template creates Event Hub, consumer groups, access policies, and storage for checkpointing.\n\n⚠️ PREREQUISITES:\n• An existing resource group (must be created before deployment)\n• If using existing Event Hub namespace: MUST be Standard or Premium tier (Basic not supported)",
         "location": {
-          "visible": true
+          "visible": true,
+          "resourceTypes": [
+            "Microsoft.Resources/deployments"
+          ]
         }
       }
     },
