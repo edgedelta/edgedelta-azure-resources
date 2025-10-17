@@ -10,6 +10,9 @@ tests/
 ├── validate-template.sh         # ARM template validation
 ├── validate-ui-definition.sh    # UI definition validation
 ├── test-deployment.sh           # Full deployment integration test
+├── test-deployment-whatif.sh    # What-If deployment preview (safe)
+├── cleanup.sh                   # Interactive cleanup for dev/testing (Bash)
+├── cleanup.ps1                  # Interactive cleanup for dev/testing (PowerShell)
 ├── cleanup-test-resources.sh    # Clean up test resources
 └── parameters/
     └── test-all-new.json        # Test parameters for new resources
@@ -43,10 +46,116 @@ This runs both template and UI definition validation without deploying resources
 ./tests/test-deployment.sh
 ```
 
+**What-If Deployment Preview:**
+```bash
+./tests/test-deployment-whatif.sh
+```
+
+**Interactive Cleanup (Dev/Testing):**
+```bash
+# Bash
+./tests/cleanup.sh
+
+# PowerShell
+./tests/cleanup.ps1
+```
+
 **Cleanup Test Resources:**
 ```bash
 ./tests/cleanup-test-resources.sh
 ```
+
+## Safety Mechanisms (v1.0.12+)
+
+### What-If Deployment Testing
+
+The `test-deployment-whatif.sh` script previews what resources would be created WITHOUT actually deploying anything. This is especially important for subscription-level deployments.
+
+**When to use:**
+- Before deploying to production
+- When testing new configurations
+- To understand impact of changes
+
+**How it works:**
+1. Verifies prerequisites (Azure CLI, logged in)
+2. Prompts for deployment parameters
+3. Validates resource group exists
+4. Runs Azure What-If analysis
+5. Shows detailed preview of changes
+
+**Example:**
+```bash
+./tests/test-deployment-whatif.sh
+
+# Follow prompts:
+# Resource group name: my-rg
+# Event Hub namespace: my-namespace-123
+# Storage account: mystg123
+# Location: eastus
+```
+
+### Cleanup Scripts (For Local Development Only)
+
+⚠️ **WARNING**: These scripts are designed for LOCAL DEVELOPMENT AND TESTING ONLY. Do not use in production environments without careful review.
+
+**Purpose:** Clean up failed deployments or test resources during development.
+
+**Available in two versions:**
+- `cleanup.sh` - Bash version (Linux, macOS)
+- `cleanup.ps1` - PowerShell version (Windows, cross-platform)
+
+**Features:**
+1. **List Diagnostic Settings** - View all subscription-level diagnostic settings
+2. **Delete by Pattern** - Remove diagnostic settings matching a pattern (e.g., "edgedelta-activity-logs")
+3. **Clean Up Resources** - Delete entire resource groups
+4. **List Deployments** - View and delete subscription deployments
+
+**Safety features:**
+- Interactive prompts with confirmation
+- Clear warnings before destructive actions
+- Requires typing "DELETE" or "yes" for major operations
+- Color-coded output (warnings in red, success in green)
+
+**Example usage:**
+```bash
+# Bash
+./tests/cleanup.sh
+
+# PowerShell
+./tests/cleanup.ps1
+
+# Follow interactive menu:
+# 1) List all diagnostic settings
+# 2) Delete diagnostic settings by pattern
+# 3) Clean up test deployment resources
+# 4) List all deployments
+# 5) Exit
+```
+
+**Common scenarios:**
+
+**Scenario 1: Remove test diagnostic settings**
+```bash
+./tests/cleanup.sh
+# Choose option 2
+# Enter pattern: "edgedelta-activity-logs"
+# Confirm: yes
+```
+
+**Scenario 2: Clean up test resource group**
+```bash
+./tests/cleanup.sh
+# Choose option 3
+# Enter resource group: "edgedelta-template-test-rg"
+# Confirm: DELETE
+```
+
+**Important notes:**
+- Always review what will be deleted before confirming
+- Deletions cannot be undone
+- Some operations run in background (check status with Azure CLI)
+- These scripts are NOT for automated CI/CD pipelines
+- Use `cleanup-test-resources.sh` for simple test cleanup instead
 
 ## Test Levels
 
