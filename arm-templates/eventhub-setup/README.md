@@ -1,6 +1,6 @@
 # Azure Event Hub ARM Template for Edge Delta
 
-This ARM template automates the setup of Azure Event Hub infrastructure for Edge Delta integration. It supports both creating new resources and using existing Event Hub namespaces and storage accounts.
+This ARM template automates the setup of Azure Event Hub infrastructure for Edge Delta integration at the subscription level. This enables automatic configuration of subscription activity logs while creating Event Hub and storage resources in an existing resource group. It supports both creating new resources and using existing Event Hub namespaces and storage accounts.
 
 ## Deployment Modes
 
@@ -47,27 +47,30 @@ The UI definition provides an enhanced deployment experience with:
 
 ## Prerequisites
 
-- Azure subscription
-- Resource group (create during deployment or use existing)
+- Azure subscription with Contributor or Owner permissions
+- **Existing resource group** (must be created before deployment)
 - Globally unique names for new resources:
   - Event Hub namespace (e.g., `edgedelta-eh-prod-eastus`)
   - Storage account (e.g., `edgedeltachkpt123`)
 
-**Important:** Edge Delta requires **Standard or Premium tier** Event Hub namespace. The Basic tier does not support consumer groups, which are required for Edge Delta's Event Processor Host model. If selecting an existing namespace, ensure it is Standard or Premium tier.
+**Important Notes:**
+- **v1.0.12+**: This template deploys at subscription level and requires an existing resource group. Create the resource group first: `az group create --name your-resource-group --location eastus`
+- Edge Delta requires **Standard or Premium tier** Event Hub namespace. The Basic tier does not support consumer groups, which are required for Edge Delta's Event Processor Host model. If selecting an existing namespace, ensure it is Standard or Premium tier.
 
 ## Deploy to Azure
 
 Click the button below to deploy with an interactive UI that shows dropdowns for existing resources:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Fv%3D1.0.11/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Fv%3D1.0.11)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Fv%3D1.0.12/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fmain%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Fv%3D1.0.12)
 
-> The deployment wizard will show resource pickers for existing Event Hub namespaces and storage accounts when you select "Use existing".
+> **v1.0.12+**: The deployment wizard will first prompt you to select an existing resource group, then show resource pickers for existing Event Hub namespaces and storage accounts when you select "Use existing".
 
 ## Parameters
 
 | Parameter | Description | Default | Required |
 |-----------|-------------|---------|----------|
-| `location` | Azure region (dropdown picker) | Resource group location | No |
+| `resourceGroupName` | Name of existing resource group for Event Hub and storage | - | Yes |
+| `location` | Azure region (dropdown picker) | - | Yes |
 | `useExistingNamespace` | Use existing Event Hub namespace | `false` | No |
 | `eventHubNamespaceName` | Name of Event Hub namespace (existing or new) | - | Yes |
 | `eventHubSku` | SKU tier (only for new namespace) | `Standard` | No |
@@ -132,73 +135,122 @@ After deployment, the template provides these outputs mapped directly to Edge De
 
 ## Manual Deployment
 
+> **v1.0.12+ Important**: This template uses subscription-level deployment. Use `az deployment sub create` (not `az deployment group create`).
+
+### Prerequisites
+
+**Create resource group first:**
+```bash
+az group create --name your-resource-group --location eastus
+```
+
+### Test Deployment (What-If)
+
+Preview changes before deploying (recommended):
+```bash
+az deployment sub what-if \
+  --location eastus \
+  --template-file azuredeploy.json \
+  --parameters \
+    resourceGroupName=your-resource-group \
+    eventHubNamespaceName=edgedelta-eh-prod-123 \
+    storageAccountName=edgedeltachkpt123 \
+    location=eastus \
+    configureActivityLogs=false
+```
+
 ### Create All New Resources
 
 **Azure CLI:**
 ```bash
-az deployment group create \
-  --resource-group your-resource-group \
+az deployment sub create \
+  --name edgedelta-eventhub-deployment \
+  --location eastus \
   --template-file azuredeploy.json \
-  --parameters eventHubNamespaceName=edgedelta-eh-prod \
-               storageAccountName=edgedeltachkpt123 \
-               location=eastus
+  --parameters \
+    resourceGroupName=your-resource-group \
+    eventHubNamespaceName=edgedelta-eh-prod-123 \
+    storageAccountName=edgedeltachkpt123 \
+    location=eastus \
+    configureActivityLogs=false
 ```
 
 **PowerShell:**
 ```powershell
-New-AzResourceGroupDeployment `
-  -ResourceGroupName "your-resource-group" `
+New-AzDeployment `
+  -Name "edgedelta-eventhub-deployment" `
+  -Location "eastus" `
   -TemplateFile "azuredeploy.json" `
-  -eventHubNamespaceName "edgedelta-eh-prod" `
+  -resourceGroupName "your-resource-group" `
+  -eventHubNamespaceName "edgedelta-eh-prod-123" `
   -storageAccountName "edgedeltachkpt123" `
-  -location "eastus"
+  -location "eastus" `
+  -configureActivityLogs $false
 ```
 
 ### Use Existing Namespace
 
 **Azure CLI:**
 ```bash
-az deployment group create \
-  --resource-group your-resource-group \
+az deployment sub create \
+  --name edgedelta-eventhub-deployment \
+  --location eastus \
   --template-file azuredeploy.json \
-  --parameters eventHubNamespaceName=my-existing-namespace \
-               storageAccountName=edgedeltachkpt123 \
-               useExistingNamespace=true
+  --parameters \
+    resourceGroupName=your-resource-group \
+    eventHubNamespaceName=my-existing-namespace \
+    storageAccountName=edgedeltachkpt123 \
+    location=eastus \
+    useExistingNamespace=true \
+    configureActivityLogs=false
 ```
 
 **PowerShell:**
 ```powershell
-New-AzResourceGroupDeployment `
-  -ResourceGroupName "your-resource-group" `
+New-AzDeployment `
+  -Name "edgedelta-eventhub-deployment" `
+  -Location "eastus" `
   -TemplateFile "azuredeploy.json" `
+  -resourceGroupName "your-resource-group" `
   -eventHubNamespaceName "my-existing-namespace" `
   -storageAccountName "edgedeltachkpt123" `
-  -useExistingNamespace $true
+  -location "eastus" `
+  -useExistingNamespace $true `
+  -configureActivityLogs $false
 ```
 
 ### Use Existing Storage Account
 
 **Azure CLI:**
 ```bash
-az deployment group create \
-  --resource-group your-resource-group \
+az deployment sub create \
+  --name edgedelta-eventhub-deployment \
+  --location eastus \
   --template-file azuredeploy.json \
-  --parameters eventHubNamespaceName=edgedelta-eh-prod \
-               storageAccountName=my-existing-storage \
-               useExistingStorageAccount=true
+  --parameters \
+    resourceGroupName=your-resource-group \
+    eventHubNamespaceName=edgedelta-eh-prod-123 \
+    storageAccountName=my-existing-storage \
+    location=eastus \
+    useExistingStorageAccount=true \
+    configureActivityLogs=false
 ```
 
 ### Use Both Existing Resources
 
 **PowerShell:**
 ```powershell
-New-AzResourceGroupDeployment `
-  -ResourceGroupName "your-resource-group" `
+New-AzDeployment `
+  -Name "edgedelta-eventhub-deployment" `
+  -Location "eastus" `
   -TemplateFile "azuredeploy.json" `
+  -resourceGroupName "your-resource-group" `
   -eventHubNamespaceName "my-existing-namespace" `
   -storageAccountName "my-existing-storage" `
+  -location "eastus" `
   -useExistingNamespace $true `
-  -useExistingStorageAccount $true
+  -useExistingStorageAccount $true `
+  -configureActivityLogs $false
 ```
 
 ## Estimated Costs
@@ -244,7 +296,32 @@ To delete all resources created by this template:
 ```bash
 # Delete the resource group (deletes everything in it)
 az group delete --name your-resource-group --yes
+
+# If activity logs were configured, delete the diagnostic setting
+az monitor diagnostic-settings subscription delete --name edgedelta-activity-logs-<uniquestring>
 ```
+
+### Development Cleanup Tools (v1.0.12+)
+
+For local development and testing, interactive cleanup scripts are available in `tests/`:
+
+```bash
+# Bash (Linux/macOS)
+./tests/cleanup.sh
+
+# PowerShell (Windows/cross-platform)
+./tests/cleanup.ps1
+```
+
+**Features:**
+- List subscription diagnostic settings
+- Delete diagnostic settings by pattern
+- Clean up resource groups
+- View and delete deployments
+
+⚠️ **WARNING**: These are for local development only. Use with caution as deletions cannot be undone.
+
+See [tests/README.md](tests/README.md#safety-mechanisms-v1012) for detailed documentation.
 
 ## Support
 
