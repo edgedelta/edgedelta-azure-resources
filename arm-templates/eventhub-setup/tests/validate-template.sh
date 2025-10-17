@@ -90,11 +90,12 @@ else
         echo -e "${GREEN}✓${NC} Test resource group exists"
     fi
 
-    echo "  Validating template against Azure..."
-    if az deployment group validate \
-        --resource-group "$TEST_RG" \
+    echo "  Validating subscription-level template against Azure..."
+    if az deployment sub validate \
+        --location "$LOCATION" \
         --template-file "$TEMPLATE_DIR/azuredeploy.json" \
         --parameters \
+            resourceGroupName="$TEST_RG" \
             eventHubNamespaceName="test-eh-$(date +%s | tail -c 7)" \
             storageAccountName="testchk$(date +%s | tail -c 8)" \
             location="eastus" \
