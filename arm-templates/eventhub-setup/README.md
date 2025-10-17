@@ -61,7 +61,7 @@ The UI definition provides an enhanced deployment experience with:
 
 Click the button below to deploy with an interactive UI that shows dropdowns for existing resources:
 
-[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fdaniel-edgedelta%252Fsubscription-level-template%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Fv%3D1.0.12.1/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fdaniel-edgedelta%252Fsubscription-level-template%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Fv%3D1.0.12.1)
+[![Deploy to Azure](https://aka.ms/deploytoazurebutton)](https://portal.azure.com/#create/Microsoft.Template/uri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fdaniel-edgedelta%252Fsubscription-level-template%2Farm-templates%2Feventhub-setup%2Fazuredeploy.json%3Ft%3D20251017151500/createUIDefinitionUri/https%3A%2F%2Fraw.githubusercontent.com%2Fedgedelta%2Fedgedelta-azure-resources%2Fdaniel-edgedelta%252Fsubscription-level-template%2Farm-templates%2Feventhub-setup%2FcreateUiDefinition.json%3Ft%3D20251017151500)
 
 > **⚠️ TESTING ONLY**: This button points to the feature branch `daniel-edgedelta/subscription-level-template` for testing. Will be changed back to `main` before merge.
 
